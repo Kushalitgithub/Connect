@@ -7,9 +7,9 @@ export default function TabsLayout() {
     <Tabs>
       <StatusBar style="light" />
       {/* Define your tab screens here */}
-      <Tabs.Screen name="home" options={{ title: 'Home' }} />
-      <Tabs.Screen name="find" options={{ title: 'Find' }} />
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="verification-status" options={{ title: 'Verification' }} />
+      <Tabs.Screen name="requests" options={{ title: 'Requests' }} />
       <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
       <Tabs.Screen name="inbox" options={{ title: 'Messages' }} />
     </Tabs>

@@ -1,8 +1,8 @@
 # Connect — Build Process Log
 
 ## Current Status
-- Last completed ticket: <epic 2.3 — Admin approve/reject action with reason, writes to audit log>
-- Next ticket to start: <epic 2.4 — Guide-side verification status screen (pending/approved/rejected + reason)>
+- Last completed ticket: <epic 2.4 — Guide-side verification status screen (pending/approved/rejected + reason)>
+- Next ticket to start: <epic 2.5 — Guide dashboard with tours, bookings, and earnings> (In Progress)
 - Overall progress: <Epic 1 complete, Epic 2 in progress>
 
 ## What's Working
@@ -58,3 +58,5 @@
 | 2.1 | Done | Guide onboarding flow: profile info + document upload to private object storage (Completed: storage service, config updates, API endpoints, mobile onboarding screen) |
 | 2.2 | Done | Admin verification queue endpoint + UI: list pending submissions (Backend: GET /admin/verification/queue, PUT approve/reject endpoints. Frontend: React app scaffolded with login, verification queue UI, StatusChip component, auth store with token refresh) |
 | 2.3 | Done | Admin approve/reject action with reason, writes to audit log (Created VerificationAuditLog model with migration, integrated into approve/reject endpoints to log all admin verification actions) |
+| 2.4 | Done | Guide-side verification status screen (pending/approved/rejected + reason) (Added backend endpoint GET /guide/me/verification-status, created mobile verification status screen showing status, rejection reason, profile info, and action buttons) |
+| 2.5 | In Progress | Guide dashboard with tours, bookings, and earnings (Added backend endpoints for dashboard overview, tours management, bookings management, and earnings tracking. Created mobile dashboard screen with overview stats, tours list, bookings list, and earnings breakdown. Created requests screen for managing incoming booking requests.) |
