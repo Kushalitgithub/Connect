@@ -87,3 +87,13 @@ def get_user_role_required(required_role: RoleEnum):
 get_current_tourist = get_user_role_required(RoleEnum.tourist)
 get_current_guide = get_user_role_required(RoleEnum.guide)
 get_current_admin = get_user_role_required(RoleEnum.admin)
+
+
+async def get_current_user_any(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> User:
+    """
+    Get the current authenticated user regardless of role.
+    Used for chat endpoints where both tourist and guide can participate.
+    """
+    return await get_current_user(token=token, db=db)
