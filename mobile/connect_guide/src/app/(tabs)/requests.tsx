@@ -1,267 +1,176 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../../lib/design-system/BottomNav';
-import { Button as CustomButton } from '../../../lib/design-system/Button';
-import { Card } from '../../../lib/design-system/Card';
-import { StatusChip } from '../../../lib/design-system/StatusChip';
-import { colors, withOpacity } from '../../../lib/design-system/tokens';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { Calendar, Clock, User, Check, X } from 'lucide-react-native';
+import { colors } from '../../../lib/design-system/tokens';
+import { api } from '../../../lib/api';
 
-interface BookingRequest {
+type RequestType = {
   id: number;
-  tourist_name: string;
-  tourist_avatar: string | null;
-  tour_title: string;
-  date: string;
-  status: string; // will be 'pending' for this screen
-  created_at: string;
-  message: string | null;
-}
-
-export default function RequestsPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [requests, setRequests] = useState<BookingRequest[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRequests = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const accessToken = await SecureStore.getItemAsync('access_token');
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch('http://localhost:8000/api/v1/guide/dashboard/bookings?status_filter=pending', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Session expired');
-        }
-        throw new Error('Failed to fetch requests');
-      }
-
-      const data = await response.json();
-      // Transform the data to match our interface
-      const requestsData: BookingRequest[] = data.map((booking: any) => ({
-        id: booking.id,
-        tourist_name: booking.tourist_name || 'Unknown Tourist',
-        tourist_avatar: null, // We don't have avatar in the current API, but we can add later
-        tour_title: booking.tour_title,
-        date: booking.date,
-        status: booking.status,
-        created_at: booking.created_at,
-        message: null // We don't have a message field in the current booking model
-      }));
-      setRequests(requestsData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load requests');
-      console.error('Requests error:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  tour_listing: {
+    id: number;
+    title: string;
+    price: number;
   };
+  tourist: {
+    id: number;
+    email: string;
+  };
+  date: string;
+  status: string;
+  num_clients: number;
+  created_at: string;
+};
+
+export default function GuideRequestsScreen() {
+  const [requests, setRequests] = useState<RequestType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRequests();
   }, []);
 
-  const onRefresh = () => {
-    fetchRequests(true);
-  };
-
-  const handleAcceptRequest = async (requestId: number) => {
+  const fetchRequests = async () => {
     try {
-      const accessToken = await SecureStore.getItemAsync('access_token');
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/guide/dashboard/bookings/${requestId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'accepted' }),
+      setLoading(true);
+      const { data } = await api.get<RequestType[]>('/guide/dashboard/bookings', {
+        params: { status: 'pending' },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to accept request');
-      }
-
-      // Refetch requests
-      fetchRequests();
-    } catch (err: any) {
-      console.error('Error accepting request:', err);
-      alert('Failed to accept request');
+      setRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Failed to load requests. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeclineRequest = async (requestId: number) => {
+  const handleAction = async (id: number, action: 'accept' | 'decline') => {
     try {
-      const accessToken = await SecureStore.getItemAsync('access_token');
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/guide/dashboard/bookings/${requestId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'declined' }),
+      const targetStatus = action === 'accept' ? 'accepted' : 'declined';
+      await api.put(`/guide/dashboard/bookings/${id}/status`, undefined, {
+        params: { status: targetStatus },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to decline request');
-      }
-
-      // Refetch requests
-      fetchRequests();
-    } catch (err: any) {
-      console.error('Error declining request:', err);
-      alert('Failed to decline request');
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      Alert.alert('Failed to respond to request. Please try again.');
     }
   };
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary }}>Loading requests...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <TopStatusBar title="Requests" leftAction={() => router.back()} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <MaterialCommunityIcons name="alert-circle" size={48} color={colors.error} />
-          <Text style={{ marginTop: 16, fontSize: 18, fontWeight: '600', color: colors.textPrimary }}>
-            Error Loading Requests
-          </Text>
-          <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
-            {error}
-          </Text>
-          <CustomButton onPress={() => fetchRequests()} title="Retry" style={{ marginTop: 20 }}>
-            Retry
-          </CustomButton>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.primary} />
         </View>
-        <BottomNav />
-      </View>
-    );
-  }
-
-  if (requests.length === 0) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <TopStatusBar title="Requests" leftAction={() => router.back()} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <MaterialCommunityIcons name="calendar-clock" size={48} color={colors.textMuted} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-            No pending requests
-          </Text>
-          <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
-            You will see booking requests here when tourists want to book your tours.
-          </Text>
-        </View>
-        <BottomNav />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <TopStatusBar title="Requests" leftAction={() => router.back()} />
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
-        }
-      >
-        <FlatList
-          data={requests}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <Card style={{ marginBottom: 12, padding: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 }}>
-                    {item.tour_title}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
-                    {new Date(item.date).toLocaleString()}
-                  </Text>
-                  {item.message && (
-                    <View style={{ marginTop: 8, padding: 12, backgroundColor: withOpacity(colors.primary, 0.1), borderRadius: 8 }}>
-                      <Text style={{ fontSize: 14, color: colors.textPrimary }}>
-                        {item.message}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>
-                      Requested
-                    </Text>
-                    <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                      {new Date(item.created_at).toLocaleString()}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <View style={{ marginTop: 16, flexDirection: 'row', gap: 8 }}>
-                <CustomButton
-                  onPress={() => handleAcceptRequest(item.id)}
-                  title="Accept"
-                  style={{ flex: 1 }}
-                >
-                  Accept
-                </CustomButton>
-                <CustomButton
-                  onPress={() => handleDeclineRequest(item.id)}
-                  title="Decline"
-                  style={{ flex: 1 }}
-                >
-                  Decline
-                </CustomButton>
-              </View>
-            </Card>
-          )}
-          ListEmptyComponent={
-            <View style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="calendar-clock" size={48} color={colors.textMuted} />
-              <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-                No pending requests
-              </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Booking Requests</Text>
+          <Text style={styles.subtitle}>Review and respond to incoming tourist requests</Text>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+          {error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
             </View>
-          }
-        />
-      </ScrollView>
-      <BottomNav />
-    </View>
+          )}
+
+          {requests.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No Pending Requests</Text>
+              <Text style={styles.emptySubtitle}>You are all caught up for now!</Text>
+            </View>
+          ) : (
+            requests.map((r) => (
+              <View key={r.id} style={styles.requestCard}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.tourTitle}>{r.tour_listing.title}</Text>
+                  <Text style={styles.price}>${r.tour_listing.price}</Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <User size={14} color={colors.textSecondary} />
+                  <Text style={styles.detailText}>Tourist: {r.tourist.email} ({r.num_clients} clients)</Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Calendar size={14} color={colors.textSecondary} />
+                  <Text style={styles.detailText}>{r.date}</Text>
+                  <Clock size={14} color={colors.textSecondary} style={{ marginLeft: 10 }} />
+                  <Text style={styles.detailText}>{new Date(r.created_at).toLocaleDateString()}</Text>
+                </View>
+
+                <View style={styles.actionsRow}>
+                  <Pressable
+                    style={[styles.btn, styles.declineBtn]}
+                    onPress={() => handleAction(r.id, 'decline')}
+                  >
+                    <X size={16} color="#EF4444" />
+                    <Text style={styles.declineText}>Decline</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.btn, styles.acceptBtn]}
+                    onPress={() => handleAction(r.id, 'accept')}
+                  >
+                    <Check size={16} color="#FFFFFF" />
+                    <Text style={styles.acceptText}>Accept Booking</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))
+          )}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  header: { marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: colors.textPrimary },
+  subtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  listContent: { gap: 14 },
+  requestCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 10,
+  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  tourTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: 8 },
+  price: { fontSize: 16, fontWeight: '800', color: colors.primary },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  detailText: { fontSize: 13, color: colors.textSecondary },
+  actionsRow: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  btn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 12 },
+  declineBtn: { borderWidth: 1, borderColor: '#EF4444' },
+  declineText: { color: '#EF4444', fontSize: 13, fontWeight: '700' },
+  acceptBtn: { backgroundColor: colors.primary },
+  acceptText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
+  emptySubtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+  errorBox: { backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText: { color: '#991B1B', fontSize: 13 },
+});

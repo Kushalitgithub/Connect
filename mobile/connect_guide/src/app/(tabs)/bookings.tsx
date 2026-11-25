@@ -1,225 +1,151 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../../lib/design-system/BottomNav';
-import { Button as CustomButton } from '../../../lib/design-system/Button';
-import { Card } from '../../../lib/design-system/Card';
-import { StatusChip } from '../../../lib/design-system/StatusChip';
-import { colors, withOpacity } from '../../../lib/design-system/tokens';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { Calendar, Clock, UserCheck } from 'lucide-react-native';
+import { colors } from '../../../lib/design-system/tokens';
+import { api } from '../../../lib/api';
 
-interface BookingItem {
+type BookingType = {
   id: number;
-  tourist_id: number;
-  tour_listing_id: number;
+  tour_listing: { id: number; title: string; price: number };
+  tourist: { id: number; email: string };
   date: string;
   status: string;
+  num_clients: number;
   created_at: string;
-}
+};
 
-export default function BookingsPage() {
-  const router = useRouter();
+export default function GuideBookingsScreen() {
+  const [bookings, setBookings] = useState<BookingType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
-
-  const fetchBookings = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const accessToken = await SecureStore.getItemAsync('access_token');
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
-
-      const url = filterStatus
-        ? `http://localhost:8000/api/v1/guide/dashboard/bookings?status_filter=${filterStatus}`
-        : 'http://localhost:8000/api/v1/guide/dashboard/bookings';
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Session expired');
-        }
-        throw new Error('Failed to fetch bookings');
-      }
-
-      const data = await response.json();
-      setBookings(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load bookings');
-      console.error('Bookings error:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
 
   useEffect(() => {
     fetchBookings();
-  }, [filterStatus]);
+  }, []);
 
-  const onRefresh = () => {
-    fetchBookings(true);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'pending';
-      case 'accepted':
-        return 'accepted';
-      case 'declined':
-        return 'rejected';
-      case 'completed':
-        return 'completed';
-      case 'cancelled':
-        return 'cancelled';
-      default:
-        return 'pending';
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get<BookingType[]>('/guide/dashboard/bookings');
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Failed to load bookings. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const renderFilterButtons = () => {
-    const filters = [
-      { label: 'All', value: null },
-      { label: 'Pending', value: 'pending' },
-      { label: 'Accepted', value: 'accepted' },
-      { label: 'Completed', value: 'completed' },
-      { label: 'Cancelled', value: 'cancelled' },
-    ];
-
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {filters.map((filter) => (
-            <CustomButton
-              key={filter.label}
-              onPress={() => setFilterStatus(filter.value)}
-              style={{
-                backgroundColor: filterStatus === filter.value ? colors.primary : colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-              }}
-            >
-              <Text style={{
-                color: filterStatus === filter.value ? colors.surface : colors.textPrimary,
-                fontSize: 14,
-                fontWeight: '600'
-              }}>
-                {filter.label}
-              </Text>
-            </CustomButton>
-          ))}
-        </View>
-      </ScrollView>
-    );
   };
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary }}>Loading bookings...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <TopStatusBar title="Bookings" />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <MaterialCommunityIcons name="alert-circle" size={48} color={colors.error} />
-          <Text style={{ marginTop: 16, fontSize: 18, fontWeight: '600', color: colors.textPrimary }}>
-            Error Loading Bookings
-          </Text>
-          <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
-            {error}
-          </Text>
-          <CustomButton onPress={() => fetchBookings()} title="Retry" style={{ marginTop: 20 }}>
-            Retry
-          </CustomButton>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.primary} />
         </View>
-        <BottomNav />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <TopStatusBar title="Bookings" />
-      <View style={{ flex: 1, padding: 20 }}>
-        {renderFilterButtons()}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Guide Bookings</Text>
+          <Text style={styles.subtitle}>Scheduled, active, and past tours</Text>
+        </View>
 
-        <ScrollView
-          style={{ flex: 1 }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
-          }
-        >
+        <View style={styles.tabsRow}>
+          <Pressable style={[styles.tabBtn, styles.activeTabBtn]}>
+            <Text style={[styles.tabText, styles.activeTabText]}>All Bookings</Text>
+          </Pressable>
+        </View>
+
+        {error && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
           {bookings.length === 0 ? (
-            <View style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
-              <MaterialCommunityIcons name="calendar-blank" size={48} color={colors.textMuted} />
-              <Text style={{ marginTop: 16, color: colors.textSecondary }}>
-                {filterStatus ? `No ${filterStatus} bookings` : 'No bookings yet'}
-              </Text>
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No Bookings</Text>
+              <Text style={styles.emptySubtitle}>Your tours' bookings will appear here.</Text>
             </View>
           ) : (
-            <FlatList
-              data={bookings}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <Card style={{ marginBottom: 12, padding: 16 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 }}>
-                        Booking #{item.id}
-                      </Text>
-                      <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
-                        Tour ID: {item.tour_listing_id}
-                      </Text>
-                      <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 8 }}>
-                        Date: {new Date(item.date).toLocaleString()}
-                      </Text>
-                      <StatusChip status={getStatusColor(item.status) as any}>
-                        {item.status.toUpperCase()}
-                      </StatusChip>
-                    </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                        Created
-                      </Text>
-                      <Text style={{ fontSize: 12, color: colors.textMuted }}>
-                        {new Date(item.created_at).toLocaleDateString()}
-                      </Text>
-                    </View>
-                  </View>
-                </Card>
-              )}
-            />
+            bookings.map((b) => (
+              <View key={b.id} style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.tourTitle}>{b.tour_listing.title}</Text>
+                  <Text style={styles.price}>${b.tour_listing.price}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <UserCheck size={14} color={colors.textSecondary} />
+                  <Text style={styles.detailText}>Tourist: {b.tourist.email}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Calendar size={14} color={colors.textSecondary} />
+                  <Text style={styles.detailText}>{b.date}</Text>
+                  <Clock size={14} color={colors.textSecondary} style={{ marginLeft: 10 }} />
+                  <Text style={styles.detailText}>{b.num_clients} client(s)</Text>
+                </View>
+                <View style={styles.statusRow}>
+                  <Text style={[styles.statusLabel, { color: statusColor(b.status) }]}>
+                    {b.status}
+                  </Text>
+                </View>
+              </View>
+            ))
           )}
+          <View style={{ height: 100 }} />
         </ScrollView>
       </View>
-      <BottomNav />
-    </View>
+    </SafeAreaView>
   );
 }
+
+const statusColor = (s: string) => {
+  switch (s) {
+    case 'pending': return '#F59E0B';
+    case 'accepted': return '#10B981';
+    case 'completed': return '#3B82F6';
+    case 'cancelled': return '#EF4444';
+    default: return '#6B7280';
+  }
+};
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
+  header: { marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: colors.textPrimary },
+  subtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  tabsRow: { flexDirection: 'row', backgroundColor: '#F3F4F6', borderRadius: 12, padding: 4, marginBottom: 16 },
+  tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+  activeTabBtn: { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  tabText: { fontSize: 12, fontWeight: '600', color: colors.textSecondary },
+  activeTabText: { color: colors.textPrimary },
+  listContent: { gap: 12 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#E5E7EB', gap: 8 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  tourTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary, flex: 1 },
+  price: { fontSize: 15, fontWeight: '800', color: colors.primary },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  detailText: { fontSize: 13, color: colors.textSecondary },
+  statusRow: { marginTop: 8 },
+  statusLabel: { fontSize: 12, fontWeight: '700' },
+  emptyState: { paddingVertical: 50, alignItems: 'center' },
+  emptyTitle: { fontSize: 14, color: colors.textSecondary },
+  emptySubtitle: { fontSize: 12, color: colors.textMuted ?? '#9CA3AF', marginTop: 4 },
+  errorBox: { backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText: { color: '#991B1B', fontSize: 13 },
+});
