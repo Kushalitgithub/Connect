@@ -4,6 +4,11 @@
     "strict": true,
     "moduleResolution": "node16",
     "module": "Node16",
-    "types": ["nativewind/types"]
+    "ignoreDeprecations": "6.0",
+    "types": ["nativewind/types"],
+    "baseUrl": ".",
+    "paths": {
+      "@connect/shared": ["node_modules/@connect/shared"]
+    }
   }
 }

@@ -18,6 +18,35 @@ from app.core.dependencies import get_current_tourist, get_current_guide
 router = APIRouter()
 
 
+@router.get("/tours", status_code=status.HTTP_200_OK)
+def list_tours(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 50,
+    search: Optional[str] = None
+):
+    """
+    Public tour listing for tourists to browse available tours.
+    Only returns active tours from verified/approved guides.
+    """
+    query = db.query(TourListing).filter(
+        TourListing.active == True,  # noqa: E712
+    ).join(User, TourListing.guide_id == User.id).join(
+        GuideProfile, User.id == GuideProfile.user_id, isouter=True
+    ).filter(
+        GuideProfile.verification_status == "approved"
+    )
+
+    if search:
+        query = query.filter(
+            TourListing.title.ilike(f"%{search}%") |
+            TourListing.description.ilike(f"%{search}%")
+        )
+
+    tours = query.offset(skip).limit(limit).all()
+    return tours
+
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_booking(
     tour_listing_id: int,
