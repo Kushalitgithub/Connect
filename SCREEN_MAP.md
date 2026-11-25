@@ -15,41 +15,41 @@ This document maps all 67 reference PNGs from `References/` to their target appl
 | `References/Account_Create/Guide_Account_creation_IdentityVerification.png` | Guide | `GuideIdentityUploadScreen` | `/document-upload` | `POST /api/v1/guide/profile/verification` | In Progress |
 | `References/Account_Create/Guide_Account_creation_IdentityVerification_Scroll.png` | Guide | `GuideIdentityUploadScreen` (Scroll) | `/document-upload` | `POST /api/v1/guide/profile/verification` | In Progress |
 | `References/Account_Create/Guide_Account_creation_Document_Submission.png` | Guide | `GuideVerificationStatusScreen` | `/verification-status` | `GET /api/v1/guide/me/verification-status` | In Progress |
-| `References/Tourist/Tourist_HomePage.png` | User | `TouristHomeScreen` | `/(tabs)/home` | `GET /api/v1/tours` | In Progress |
-| `References/Tourist/Tourist_HomePage_Scroll.png` | User | `TouristHomeScreen` (Scroll) | `/(tabs)/home` | `GET /api/v1/tours` | In Progress |
+| `References/Tourist/Tourist_HomePage.png` | User | `TouristHomeScreen` | `/(tabs)/home` | `GET /api/v1/tours` | Complete |
+| `References/Tourist/Tourist_HomePage_Scroll.png` | User | `TouristHomeScreen` (Scroll) | `/(tabs)/home` | `GET /api/v1/tours` | Complete |
 | `References/Tourist/Tourist_SearchDestination.png` | User | `SearchDestinationScreen` | `/search/destinations` | `GET /api/v1/tours?destination=` | In Progress |
 | `References/Tourist/Tourist_SearchDestination_Kathmandu.png` | User | `SearchDestinationScreen` (Results) | `/search/destinations` | `GET /api/v1/tours?destination=Kathmandu` | In Progress |
 | `References/Tourist/Tourist_SearchDestination_Kathmandu_Scroll.png` | User | `SearchDestinationScreen` (Scroll) | `/search/destinations` | `GET /api/v1/tours?destination=Kathmandu` | In Progress |
-| `References/Tourist/Tourist_ExploreGuide.png` | User | `ExploreGuideScreen` | `/(tabs)/guide` | `GET /api/v1/guides` | In Progress |
+| `References/Tourist/Tourist_ExploreGuide.png` | User | `ExploreGuideScreen` | `/(tabs)/guide` | `GET /api/v1/guides` | Complete |
 | `References/Tourist/Tourist_ExploreGuide_FiltersOption.png` | User | `GuideFilterModal` | `/(tabs)/guide?filter=open` | Client filter state | In Progress |
-| `References/Tourist/Tourist_ExploreGuide_Filtered.png` | User | `ExploreGuideScreen` (Filtered) | `/(tabs)/guide` | `GET /api/v1/guides` (filtered) | In Progress |
+| `References/Tourist/Tourist_ExploreGuide_Filtered.png` | User | `ExploreGuideScreen` (Filtered) | `/(tabs)/guide` | `GET /api/v1/guides` (filtered) | Complete |
 | `References/Tourist/Tourist_GuideSearch_Kathmandu.png` | User | `ExploreGuideScreen` (Kathmandu) | `/(tabs)/guide?q=Kathmandu` | `GET /api/v1/guides?city=Kathmandu` | In Progress |
-| `References/Tourist/Tourist_ViewGuideProfile.png` | User | `GuideProfileViewScreen` | `/guides/[id]` | `GET /api/v1/guides/{id}` | In Progress |
-| `References/Tourist/Tourist_ViewGuideProfile_Scroll.png` | User | `GuideProfileViewScreen` (Scroll) | `/guides/[id]` | `GET /api/v1/guides/{id}` | In Progress |
-| `References/Tourist/Tourist_BookGide_Date.png` | User | `BookingDateSelectModal` | `/book/[tourId]/date` | `GET /api/v1/tours/{id}/availability` | In Progress |
-| `References/Tourist/Tourist_BookGide_Duration.png` | User | `BookingDurationSelectModal` | `/book/[tourId]/duration` | Tour detail | In Progress |
-| `References/Tourist/Tourist_BookGide_NumberOfClient.png` | User | `BookingGuestsSelectModal` | `/book/[tourId]/guests` | Tour capacity check | In Progress |
-| `References/Tourist/Tourist_BookGide_FinalBooking.png` | User | `BookingSummaryScreen` | `/book/[tourId]/summary` | `POST /api/v1/bookings` | In Progress |
-| `References/Tourist/Tourist_BookGide_Booked.png` | User | `BookingConfirmationScreen` | `/book/[tourId]/confirmed` | Client state | In Progress |
-| `References/Tourist/Tourist_Booking_Upcoming.png` | User | `BookingsTabScreen` (Upcoming) | `/(tabs)/bookings?tab=upcoming` | `GET /api/v1/bookings/my?status=upcoming` | In Progress |
-| `References/Tourist/Tourist_Booking_Past.png` | User | `BookingsTabScreen` (Past) | `/(tabs)/bookings?tab=past` | `GET /api/v1/bookings/my?status=past` | In Progress |
+| `References/Tourist/Tourist_ViewGuideProfile.png` | User | `GuideProfileViewScreen` | `/guides/[id]` | `GET /api/v1/guides/{id}` | Complete |
+| `References/Tourist/Tourist_ViewGuideProfile_Scroll.png` | User | `GuideProfileViewScreen` (Scroll) | `/guides/[id]` | `GET /api/v1/guides/{id}` | Complete |
+| `References/Tourist/Tourist_BookGide_Date.png` | User | `BookingDateSelectModal` | `/book/[tourId]/date` | `GET /api/v1/tours/{id}/availability` | Complete |
+| `References/Tourist/Tourist_BookGide_Duration.png` | User | `BookingDurationSelectModal` | `/book/[tourId]/duration` | Tour detail | Complete |
+| `References/Tourist/Tourist_BookGide_NumberOfClient.png` | User | `BookingGuestsSelectModal` | `/book/[tourId]/guests` | Tour capacity check | Complete |
+| `References/Tourist/Tourist_BookGide_FinalBooking.png` | User | `BookingSummaryScreen` | `/book/[tourId]/summary` | `POST /api/v1/bookings` | Complete |
+| `References/Tourist/Tourist_BookGide_Booked.png` | User | `BookingConfirmationScreen` | `/book/[tourId]/confirmed` | Client state | Complete |
+| `References/Tourist/Tourist_Booking_Upcoming.png` | User | `BookingsTabScreen` (Upcoming) | `/(tabs)/bookings?tab=upcoming` | `GET /api/v1/bookings/my?status=upcoming` | Complete |
+| `References/Tourist/Tourist_Booking_Past.png` | User | `BookingsTabScreen` (Past) | `/(tabs)/bookings?tab=past` | `GET /api/v1/bookings/my?status=past` | Complete |
 | `References/Tourist/Tourist_Profile.png` | User | `TouristProfileScreen` | `/profile` | `GET /api/v1/auth/me` | In Progress |
 | `References/Tourist/Tourist_Profile_Scroll.png` | User | `TouristProfileScreen` (Scroll) | `/profile` | `GET /api/v1/auth/me` | In Progress |
-| `References/Tourist/Tourist_LeavingReviewPage.png` | User | `ReviewPromptModal` | `/reviews/new/[bookingId]` | `POST /api/v1/reviews` | In Progress |
-| `References/Tourist/Tourist_ReviewSubmit_Page.png` | User | `ReviewFormScreen` | `/reviews/new/[bookingId]` | `POST /api/v1/reviews` | In Progress |
-| `References/Tourist/Tourist_ReviewSubmitted_Page.png` | User | `ReviewSuccessScreen` | `/reviews/success` | Client state | In Progress |
+| `References/Tourist/Tourist_LeavingReviewPage.png` | User | `ReviewPromptModal` | `/reviews/new/[bookingId]` | `POST /api/v1/reviews` | Complete |
+| `References/Tourist/Tourist_ReviewSubmit_Page.png` | User | `ReviewFormScreen` | `/reviews/new/[bookingId]` | `POST /api/v1/reviews` | Complete |
+| `References/Tourist/Tourist_ReviewSubmitted_Page.png` | User | `ReviewSuccessScreen` | `/reviews/success` | Client state | Complete |
 | `References/Tourist/Tourist_LocationError_Page.png` | User | `LocationPermissionErrorState` | Component Modal | Client state | In Progress |
-| `References/Guide/LocalGuide_Page.png` | Guide | `GuideDashboardScreen` | `/(tabs)/dashboard` | `GET /api/v1/guide/dashboard/overview` | In Progress |
-| `References/Guide/LocalGuide_Page_Scroll.png` | Guide | `GuideDashboardScreen` (Scroll) | `/(tabs)/dashboard` | `GET /api/v1/guide/dashboard/overview` | In Progress |
-| `References/Guide/LocalGuide_MyTours.png` | Guide | `GuideToursScreen` | `/(tabs)/dashboard/tours` | `GET /api/v1/guide/dashboard/tours` | In Progress |
-| `References/Guide/LocalGuide_Request.png` | Guide | `BookingRequestsScreen` | `/(tabs)/requests` | `GET /api/v1/guide/dashboard/bookings?status=pending` | In Progress |
-| `References/Guide/LocalGuide_Bookings_Upcomming.png` | Guide | `GuideBookingsScreen` (Upcoming) | `/(tabs)/bookings?tab=upcoming` | `GET /api/v1/guide/dashboard/bookings?status=upcoming` | In Progress |
-| `References/Guide/LocalGuide_Bookings_Active.png` | Guide | `GuideBookingsScreen` (Active) | `/(tabs)/bookings?tab=active` | `GET /api/v1/guide/dashboard/bookings?status=active` | In Progress |
-| `References/Guide/LocalGuide_Bookings_Completed.png` | Guide | `GuideBookingsScreen` (Completed) | `/(tabs)/bookings?tab=completed` | `GET /api/v1/guide/dashboard/bookings?status=completed` | In Progress |
-| `References/Guide/LocalGuide_Bookings_Cancelled.png` | Guide | `GuideBookingsScreen` (Cancelled) | `/(tabs)/bookings?tab=cancelled` | `GET /api/v1/guide/dashboard/bookings?status=cancelled` | In Progress |
-| `References/Guide/LocalGuide_Inbox.png` | Guide/User | `InboxThreadsScreen` | `/(tabs)/inbox` | `GET /api/v1/chat/threads` | In Progress |
-| `References/Guide/LocalGuide_Chat.png` | Guide/User | `ChatConversationScreen` | `/chat/[threadId]` | WS `/api/v1/ws/chat`, `GET messages` | In Progress |
-| `References/Guide/LocalGuide_Earning.png` | Guide | `GuideEarningsScreen` | `/earnings` | `GET /api/v1/guide/dashboard/earnings` | In Progress |
+| `References/Guide/LocalGuide_Page.png` | Guide | `GuideDashboardScreen` | `/(tabs)/dashboard` | `GET /api/v1/guide/dashboard/overview` | Complete |
+| `References/Guide/LocalGuide_Page_Scroll.png` | Guide | `GuideDashboardScreen` (Scroll) | `/(tabs)/dashboard` | `GET /api/v1/guide/dashboard/overview` | Complete |
+| `References/Guide/LocalGuide_MyTours.png` | Guide | `GuideToursScreen` | `/(tabs)/dashboard/tours` | `GET /api/v1/guide/dashboard/tours` | Complete |
+| `References/Guide/LocalGuide_Request.png` | Guide | `BookingRequestsScreen` | `/(tabs)/requests` | `GET /api/v1/guide/dashboard/bookings?status=pending` | Complete |
+| `References/Guide/LocalGuide_Bookings_Upcomming.png` | Guide | `GuideBookingsScreen` (Upcoming) | `/(tabs)/bookings?tab=upcoming` | `GET /api/v1/guide/dashboard/bookings?status=upcoming` | Complete |
+| `References/Guide/LocalGuide_Bookings_Active.png` | Guide | `GuideBookingsScreen` (Active) | `/(tabs)/bookings?tab=active` | `GET /api/v1/guide/dashboard/bookings?status=active` | Complete |
+| `References/Guide/LocalGuide_Bookings_Completed.png` | Guide | `GuideBookingsScreen` (Completed) | `/(tabs)/bookings?tab=completed` | `GET /api/v1/guide/dashboard/bookings?status=completed` | Complete |
+| `References/Guide/LocalGuide_Bookings_Cancelled.png` | Guide | `GuideBookingsScreen` (Cancelled) | `/(tabs)/bookings?tab=cancelled` | `GET /api/v1/guide/dashboard/bookings?status=cancelled` | Complete |
+| `References/Guide/LocalGuide_Inbox.png` | Guide/User | `InboxThreadsScreen` | `/(tabs)/inbox` | `GET /api/v1/chat/threads` | Complete |
+| `References/Guide/LocalGuide_Chat.png` | Guide/User | `ChatConversationScreen` | `/chat/[threadId]` | WS `/api/v1/ws/chat`, `GET messages` | Complete |
+| `References/Guide/LocalGuide_Earning.png` | Guide | `GuideEarningsScreen` | `/earnings` | `GET /api/v1/guide/dashboard/earnings` | Complete |
 | `References/Admin/Admin_login.png` | Admin | `AdminLoginScreen` | `/login` | `POST /api/v1/admin/auth/login` | In Progress |
 | `References/Admin/Admin_Homepage.png` | Admin | `AdminDashboardScreen` | `/` | `GET /api/v1/admin/metrics` | In Progress |
 | `References/Admin/Admin_Homepage_Scroll.png` | Admin | `AdminDashboardScreen` (Scroll) | `/` | `GET /api/v1/admin/metrics` | In Progress |

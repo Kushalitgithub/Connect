@@ -50,4 +50,12 @@ api.interceptors.response.use(
   }
 )
 
+export function getErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const response = (err as { response?: { data?: { detail?: string } } }).response
+    return response?.data?.detail || 'Request failed'
+  }
+  return err instanceof Error ? err.message : 'Unknown error'
+}
+
 export default api

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LogOut, CheckCircle, XCircle, FileText } from 'lucide-react'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import StatusChip from '@/components/StatusChip'
 import Button from '@/components/Button'
@@ -32,8 +32,8 @@ export default function VerificationQueue() {
       const { data } = await api.get('/admin/verification/queue')
       setSubmissions(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load queue')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load queue')
     } finally {
       setLoading(false)
     }
@@ -51,8 +51,8 @@ export default function VerificationQueue() {
       await api.put(`/admin/verification/${guideId}/approve`)
       await fetchQueue()
       setSelectedGuide(null)
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to approve')
+    } catch (err: unknown) {
+      alert(getErrorMessage(err) || 'Failed to approve')
     } finally {
       setActionLoading(false)
     }
@@ -72,8 +72,8 @@ export default function VerificationQueue() {
       await fetchQueue()
       setSelectedGuide(null)
       setRejectReason('')
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to reject')
+    } catch (err: unknown) {
+      alert(getErrorMessage(err) || 'Failed to reject')
     } finally {
       setActionLoading(false)
     }
@@ -129,7 +129,7 @@ export default function VerificationQueue() {
                       Submitted: {new Date(submission.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <StatusChip status={submission.verification_status as any} />
+                  <StatusChip status={submission.verification_status} />
                 </div>
 
                 {submission.bio && (

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdminLayout } from '../components/AdminLayout'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Users, Clock } from 'lucide-react'
 import Button from '@/components/Button'
@@ -22,7 +22,7 @@ export const BookingsConsole: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const { clearAuth } = useAuthStore()
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true)
       const params: Record<string, string> = {}
@@ -30,32 +30,35 @@ export const BookingsConsole: React.FC = () => {
       const { data } = await api.get<BookingRow[]>('/admin/bookings', { params })
       setBookings(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load bookings')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load bookings')
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     fetchBookings()
-  }, [statusFilter])
+  }, [fetchBookings])
 
-  const filtered = bookings.filter((b) => {
-    if (statusFilter === 'all') return true
-    return b.status === statusFilter
-  })
+  const filtered = useMemo(
+    () => bookings.filter((b) => (statusFilter === 'all' ? true : b.status === statusFilter)),
+    [bookings, statusFilter]
+  )
 
-  const handleStatusChange = async (booking: BookingRow, newStatus: string) => {
-    try {
-      await api.put(`/admin/bookings/${booking.id}/status`, undefined, {
-        params: { status: newStatus },
-      })
-      await fetchBookings()
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to update booking')
-    }
-  }
+  const handleStatusChange = useCallback(
+    async (booking: BookingRow, newStatus: string) => {
+      try {
+        await api.put(`/admin/bookings/${booking.id}/status`, undefined, {
+          params: { status: newStatus },
+        })
+        await fetchBookings()
+      } catch (err: unknown) {
+        alert(getErrorMessage(err) || 'Failed to update booking')
+      }
+    },
+    [fetchBookings]
+  )
 
   const handleLogout = () => {
     clearAuth()

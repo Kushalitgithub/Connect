@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdminLayout } from '../components/AdminLayout'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { ShieldAlert } from 'lucide-react'
 import Button from '@/components/Button'
@@ -17,6 +17,7 @@ interface ReportRow {
   created_at: string | null
 }
 
+
 export const ReportsConsole: React.FC = () => {
   const [reports, setReports] = useState<ReportRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +25,7 @@ export const ReportsConsole: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const { clearAuth } = useAuthStore()
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true)
       const params: Record<string, string> = {}
@@ -32,32 +33,35 @@ export const ReportsConsole: React.FC = () => {
       const { data } = await api.get<ReportRow[]>('/admin/reports', { params })
       setReports(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load reports')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load reports')
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     fetchReports()
-  }, [statusFilter])
+  }, [fetchReports])
 
-  const filtered = reports.filter((r) => {
-    if (statusFilter === 'all') return true
-    return r.status === statusFilter
-  })
+  const filtered = useMemo(
+    () => reports.filter((r) => (statusFilter === 'all' ? true : r.status === statusFilter)),
+    [reports, statusFilter]
+  )
 
-  const handleResolve = async (report: ReportRow, newStatus: 'resolved' | 'dismissed') => {
-    try {
-      await api.put(`/admin/reports/${report.id}/status`, undefined, {
-        params: { status: newStatus },
-      })
-      await fetchReports()
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to update report')
-    }
-  }
+  const handleResolve = useCallback(
+    async (report: ReportRow, newStatus: 'resolved' | 'dismissed') => {
+      try {
+        await api.put(`/admin/reports/${report.id}/status`, undefined, {
+          params: { status: newStatus },
+        })
+        await fetchReports()
+      } catch (err: unknown) {
+        alert(getErrorMessage(err) || 'Failed to update report')
+      }
+    },
+    [fetchReports]
+  )
 
   const handleLogout = () => {
     clearAuth()

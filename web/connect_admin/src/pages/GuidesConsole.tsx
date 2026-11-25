@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdminLayout } from '../components/AdminLayout'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { ShieldCheck, Search } from 'lucide-react'
 import Button from '@/components/Button'
@@ -21,6 +21,7 @@ interface GuideRow {
   created_at: string | null
 }
 
+
 export const GuidesConsole: React.FC = () => {
   const [guides, setGuides] = useState<GuideRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,7 +30,7 @@ export const GuidesConsole: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const { clearAuth } = useAuthStore()
 
-  const fetchGuides = async () => {
+  const fetchGuides = useCallback(async () => {
     try {
       setLoading(true)
       const params: Record<string, string> = {}
@@ -38,26 +39,30 @@ export const GuidesConsole: React.FC = () => {
       const { data } = await api.get<GuideRow[]>('/admin/guides', { params })
       setGuides(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load guides')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load guides')
     } finally {
       setLoading(false)
     }
-  }
+  }, [search, statusFilter])
 
   useEffect(() => {
     fetchGuides()
-  }, [search, statusFilter])
+  }, [fetchGuides])
 
-  const filtered = guides.filter((g) => {
-    const matchesSearch =
-      g.email.toLowerCase().includes(search.toLowerCase()) ||
-      (g.guide_profile?.bio?.toLowerCase().includes(search.toLowerCase()) ?? false)
-    const matchesStatus =
-      statusFilter === 'all' ||
-      g.guide_profile?.verification_status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const filtered = useMemo(
+    () =>
+      guides.filter((g) => {
+        const matchesSearch =
+          g.email.toLowerCase().includes(search.toLowerCase()) ||
+          (g.guide_profile?.bio?.toLowerCase().includes(search.toLowerCase()) ?? false)
+        const matchesStatus =
+          statusFilter === 'all' ||
+          g.guide_profile?.verification_status === statusFilter
+        return matchesSearch && matchesStatus
+      }),
+    [guides, search, statusFilter]
+  )
 
   const handleLogout = () => {
     clearAuth()

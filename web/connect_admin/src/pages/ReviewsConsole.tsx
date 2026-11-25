@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdminLayout } from '../components/AdminLayout'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Star, Search } from 'lucide-react'
 import Button from '@/components/Button'
@@ -15,6 +15,7 @@ interface ReviewRow {
   created_at: string | null
 }
 
+
 export const ReviewsConsole: React.FC = () => {
   const [reviews, setReviews] = useState<ReviewRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -22,27 +23,31 @@ export const ReviewsConsole: React.FC = () => {
   const [search, setSearch] = useState('')
   const { clearAuth } = useAuthStore()
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true)
       const { data } = await api.get<ReviewRow[]>('/admin/reviews')
       setReviews(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load reviews')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load reviews')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchReviews()
-  }, [])
+  }, [fetchReviews])
 
-  const filtered = reviews.filter((r) => {
-    if (!search) return true
-    return String(r.id).includes(search) || String(r.booking_id).includes(search)
-  })
+  const filtered = useMemo(
+    () =>
+      reviews.filter((r) => {
+        if (!search) return true
+        return String(r.id).includes(search) || String(r.booking_id).includes(search)
+      }),
+    [reviews, search]
+  )
 
   const handleLogout = () => {
     clearAuth()

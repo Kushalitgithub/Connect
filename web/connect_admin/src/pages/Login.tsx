@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import Button from '@/components/Button'
 
@@ -24,8 +24,8 @@ export default function Login() {
       })
       setTokens(data.access_token, data.refresh_token)
       navigate('/verification')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Login failed')
     } finally {
       setLoading(false)
     }

@@ -71,3 +71,82 @@
 | 2.5 | Audit failed | Dashboard code and native bundle exist, but booking creation/state machine is absent |
 | 2.6 | Audit failed | Verification checks cover several guide dashboard reads/writes, but the full listing/public-search contract is not implemented and booking writes are absent |
 | 2.7 | Blocked | Withdrawal code exists, but it conflicts with the v1 estimate-only scope and lacks migration, atomic reservation, and admin processing |
+
+
+---
+
+## 2026-11-25: Antigravity Frontend Rebuild & Remote Synchronization
+
+### Completed Work
+1. **Remote Repository Synchronization:**
+   - Updated remote origin URL to the new target repository: `https://github.com/Kushalitgithub/Connect.git`.
+   - Verified `.gitignore` to prevent any `.env`, secret files, or sqlite database files from leaking.
+   - Preserved all local uncommitted/untracked work and successfully pushed the full baseline to `main` on the new GitHub repository.
+
+2. **Branch & Architecture Setup:**
+   - Created working branch `frontend-rebuild` with tag `local-before-rebuild` on local HEAD.
+   - Established the top-level `shared/` package containing design tokens (`Colors`, `Spacing`, `Radii`) and Zod validation schemas (`UserRole`, `LoginRequest`, `TouristSignup`, `GuideSignup`, `GuideProfile`, `TourCreate`, `BookingRequest`).
+   - Resolved mobile TypeScript `nativewind/types` dependency errors; aligned peer dependencies cleanly.
+
+3. **Connect User (Tourist App - React Native / Expo):**
+   - Implemented custom floating translucent bottom navigation bar (`BottomNav.tsx`) with active orange state, safe area insets, and icon integration via `lucide-react-native` (`Home`, `Find Guide`, `Bookings`, `Inbox`).
+   - Implemented `TouristHomeScreen` (`(tabs)/home.tsx`) matching `Tourist_HomePage.png` with search triggers, popular destination cards, and verified local guide highlights.
+   - Implemented `ExploreGuideScreen` (`(tabs)/guide.tsx`) matching `Tourist_ExploreGuide.png` and `Tourist_ExploreGuide_FiltersOption.png` with live filter sheet modal (Language, Specialty).
+   - Implemented `TouristBookingsScreen` (`(tabs)/bookings.tsx`) matching `Tourist_Booking_Upcoming.png` and `Tourist_Booking_Past.png` with tab switching, status badges, and cancel confirmation dialog.
+   - Implemented `TouristInboxScreen` (`(tabs)/inbox.tsx`) matching conversation thread list.
+
+4. **Connect Guide (Guide App - React Native / Expo):**
+   - Implemented floating translucent bottom bar (`BottomNav.tsx`) with active indicator (`Dashboard`, `Requests`, `Bookings`, `Inbox`).
+   - Implemented `GuideDashboardScreen` (`(tabs)/dashboard.tsx`) matching `LocalGuide_Page.png` with real-time metrics cards, new tour quick action, and catalog management hub.
+   - Implemented `GuideRequestsScreen` (`(tabs)/requests.tsx`) matching `LocalGuide_Request.png` with Accept / Decline action handlers.
+   - Implemented `GuideBookingsScreen` (`(tabs)/bookings.tsx`) matching `LocalGuide_Bookings_Upcomming.png`, `Active.png`, `Completed.png`, and `Cancelled.png` with tabbed filtering.
+
+5. **Connect Admin (Staff Web App - React + Vite + Tailwind):**
+   - Implemented responsive `AdminLayout.tsx` featuring a persistent desktop sidebar that collapses into a slide-over mobile drawer (`Admin_Menu.png`).
+   - Implemented `Dashboard.tsx` (`Admin_Homepage.png`) with platform metrics cards (Active Guides, Published Tours, Completed Bookings, Pending Verifications) and verification review alerts.
+   - Configured React Router routes linking Login, Dashboard, and Verification Queue.
+
+6. **Quality & Verification Checks:**
+   - `mobile/connect_user`: `npx tsc --noEmit` passed with **0 errors**.
+   - `mobile/connect_guide`: `npx tsc --noEmit` passed with **0 errors**.
+   - `web/connect_admin`: `npm run build` completed successfully with **0 errors**, generating production bundle.
+   - `backend`: `PYTHONPATH=backend backend/venv/bin/pytest backend/tests -v` passed **11 of 11 tests** with zero failures.
+
+### Backend Changes Needed Next (For Claude Code)
+1. **Epic 6 Bookings:** DONE — `POST /api/v1/bookings` with atomic availability lock, GET `/bookings/my`, PUT cancel/complete, public `/bookings/tours`, `/bookings/guides/{id}`.
+2. **Epic 7 Real-time WebSocket:** DONE — `GET/POST /chat/threads`, `GET /threads/{id}/messages`, WebSocket `/chat/ws` with JWT re-auth + participant check.
+3. **Epic 8 Reviews:** DONE — `POST /reviews` restricted to completed bookings, one per booking, GET `/reviews/my`.
+4. **Epic 9 Admin Management:** DONE — `GET /admin/{guides,tours,bookings,reviews,reports,metrics}`, `PUT /admin/bookings/{id}/status`, `PUT /admin/reports/{id}/status`.
+5. **Phase C Mobile Wiring:** DONE — connect_user (auth, home tours, bookings/my, book/[tourId], reviews/new/[bookingId], chat/[threadId], guides/[id], guide tab, inbox) and connect_guide (dashboard overview, requests accept/decline, bookings, earnings, tour-create, inbox) all wired to real backend API.
+6. **Phase C Admin Web:** DONE — all 6 remaining screens (Guides/Tours/Bookings/Reviews/Reports/Settings) wired to real backend, ESLint 9 flat config passing clean.
+
+---
+
+### Claude Code — 2026-11-25 (Frontend Rebuild Session)
+
+**Phase A — Expo SDK 58 Upgrade** (committed as `4284b2c`):
+- Both mobile apps: expo ^58, react-native 0.88.1, react 19.3.0, reanimated 4.7.1, gesture-handler ~3.3.0, safe-area-context ~5.11.1, screens ~4.30.1, svg 15.16.0, worklets peer
+- Created square app icons (1024x1024) from `logo_connect.png`; fixed `app.json` (removed invalid top-level `splash`)
+- expo-doctor: 20/20 checks pass on both apps; TypeScript strict: 0 errors on both
+- Committed on its own as required
+
+**Phase A Steps 3-4 — Env Templates + Shared Typed API Client** (committed as `e405fca`):
+- `.env.example` for connect_user and connect_guide (EXPO_PUBLIC_API_URL); `.gitignore` allows `.env.example` while `.env` stays ignored
+- `shared/api-client/` with openapi-typescript-generated `schema.d.ts` (41 paths) + `createApiClient()` Axios wrapper with bearer-token + token-refresh interceptors
+- `@connect/shared` symlinked into both mobile apps' `node_modules`
+
+**Phase B — Backend Epic 6-9 Endpoints** (committed as `f7e4359`):
+- Models: `Review`, `Report`; migration `3_add_missing_tables` (reviews, reports, refresh_tokens, withdrawals + guide profile columns)
+- Routers: bookings, reviews, chat (incl. WebSocket), admin management
+- 19/19 backend tests pass (11 original + 8 new)
+
+**Phase C — Mobile + Admin API Wiring** (committed as `6f8a061`, `318793f`, `f535eb1`, `a87d1b8`):
+- connect_user: all screens wired to real backend API
+- connect_guide: all screens wired to real backend API
+- Admin web: all 6 remaining screens + `PUT /admin/reports/{id}/status` endpoint
+- ESLint 9 flat config for admin web: 0 errors, 0 warnings
+- eas.json created for both mobile apps
+
+**Phase D — Remaining Polish:**
+- Update SCREEN_MAP.md statuses from "In Progress" to "Complete" for wired screens
+- E2E flows verification against live dev servers

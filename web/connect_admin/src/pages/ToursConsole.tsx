@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AdminLayout } from '../components/AdminLayout'
-import api from '@/lib/api'
+import api, { getErrorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Compass, Search, Trash2 } from 'lucide-react'
 import Button from '@/components/Button'
@@ -18,6 +18,7 @@ interface TourRow {
   updated_at: string | null
 }
 
+
 export const ToursConsole: React.FC = () => {
   const [tours, setTours] = useState<TourRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +27,7 @@ export const ToursConsole: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all')
   const { clearAuth } = useAuthStore()
 
-  const fetchTours = async () => {
+  const fetchTours = useCallback(async () => {
     try {
       setLoading(true)
       const params: Record<string, string> = {}
@@ -35,47 +36,50 @@ export const ToursConsole: React.FC = () => {
       const { data } = await api.get<TourRow[]>('/admin/tours', { params })
       setTours(data)
       setError('')
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load tours')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to load tours')
     } finally {
       setLoading(false)
     }
-  }
+  }, [search, activeFilter])
 
   useEffect(() => {
     fetchTours()
-  }, [search, activeFilter])
+  }, [fetchTours])
 
-  const filtered = tours.filter((t) => {
-    const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase())
-    const matchesActive =
-      activeFilter === 'all' ||
-      (activeFilter === 'active') === t.active
-    return matchesSearch && matchesActive
-  })
+  const filtered = useMemo(
+    () =>
+      tours.filter((t) => {
+        const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase())
+        const matchesActive =
+          activeFilter === 'all' || (activeFilter === 'active') === t.active
+        return matchesSearch && matchesActive
+      }),
+    [tours, search, activeFilter]
+  )
 
-  const handleToggleActive = async (tour: TourRow) => {
+  const handleToggleActive = useCallback(async (tour: TourRow) => {
     try {
       await api.put(`/admin/dashboard/tours/${tour.id}`, undefined, {
         params: { active: !tour.active },
       })
       await fetchTours()
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to update tour')
+    } catch (err: unknown) {
+      alert(getErrorMessage(err) || 'Failed to update tour')
     }
-  }
+  }, [fetchTours])
 
-  const handleDelete = async (tour: TourRow) => {
+  const handleDelete = useCallback(async (tour: TourRow) => {
     if (!confirm('Delete this tour? This cannot be undone.')) return
     try {
       await api.put(`/admin/dashboard/tours/${tour.id}`, undefined, {
         params: { active: false },
       })
       await fetchTours()
-    } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to delete tour')
+    } catch (err: unknown) {
+      alert(getErrorMessage(err) || 'Failed to delete tour')
     }
-  }
+  }, [fetchTours])
 
   const handleLogout = () => {
     clearAuth()

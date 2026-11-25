@@ -11,7 +11,7 @@ import { Settings } from './pages/Settings';
 import { useAuthStore } from './stores/authStore';
 
 const requireAuth = (element: React.ReactElement) => {
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore.getState().isAuthenticated;
   return isAuthenticated ? element : <Navigate to="/login" replace />;
 };
 

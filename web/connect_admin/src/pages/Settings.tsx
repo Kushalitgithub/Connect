@@ -3,6 +3,7 @@ import { AdminLayout } from '../components/AdminLayout'
 import { useAuthStore } from '@/stores/authStore'
 import { LogOut, Building } from 'lucide-react'
 import Button from '@/components/Button'
+import { getErrorMessage } from '@/lib/api'
 
 export const Settings: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -11,15 +12,15 @@ export const Settings: React.FC = () => {
   const [message, setMessage] = useState('')
   const { clearAuth } = useAuthStore()
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
     try {
       // Settings endpoint not yet implemented on backend; persist locally for now
       setMessage('Settings saved successfully')
-    } catch (err: any) {
-      setMessage(err.response?.data?.detail || 'Failed to save settings')
+    } catch (err: unknown) {
+      setMessage(getErrorMessage(err) || 'Failed to save settings')
     } finally {
       setLoading(false)
     }
