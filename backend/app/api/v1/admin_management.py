@@ -178,6 +178,35 @@ def list_reports(
     return reports
 
 
+@router.put("/reports/{report_id}/status", status_code=status.HTTP_200_OK)
+def resolve_report(
+    report_id: int,
+    report_status: str = Query(..., alias="status"),
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Admin resolves or dismisses a report."""
+    _require_admin(current_admin)
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Report not found",
+        )
+    if report_status not in ("resolved", "dismissed"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Status must be 'resolved' or 'dismissed'",
+        )
+    from datetime import datetime, timezone
+    report.status = report_status
+    report.resolved_by = current_admin.id
+    report.resolved_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(report)
+    return report
+
+
 @router.get("/metrics", status_code=status.HTTP_200_OK)
 def get_metrics(
     current_admin: User = Depends(get_current_admin),
