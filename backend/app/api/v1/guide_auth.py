@@ -18,7 +18,7 @@ from app.core.security import (
 )
 from app.models.user import User, RoleEnum
 from app.models.guide_profile import GuideProfile
-from app.schemas.user import UserCreate, Token
+from app.schemas.user import UserCreate, User as UserSchema, Token
 from app.core.dependencies import get_current_guide
 
 router = APIRouter()

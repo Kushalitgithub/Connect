@@ -21,7 +21,7 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({
   className = ''
 }) => {
   return (
-    <View className={`flex items-center justify-between px-4 py-4 bg-[${colors.surface]} border-b-[${colors.border]} ${className}`}>
+    <View className={`flex items-center justify-between px-4 py-4 bg-[${colors.surface}] border-b-[${colors.border}] ${className}`}>
       <StatusBar style="light" />
       <View className="flex items-center gap-2">
         {leftIcon && <Text className="text-[${colors.primary}]">{leftIcon}</Text>}

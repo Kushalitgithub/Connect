@@ -13,7 +13,8 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <View
-      className={`bg-[${colors.surface]} rounded-${radii.md} shadow-sm ${className}`}
+      className={`shadow-sm ${className}`}
+      style={{ backgroundColor: colors.surface, borderRadius: parseInt(radii.md, 10) }}
     >
       {children}
     </View>

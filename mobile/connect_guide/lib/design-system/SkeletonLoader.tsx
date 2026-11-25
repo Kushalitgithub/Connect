@@ -1,21 +1,49 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Animated, ViewStyle, StyleProp } from 'react-native';
 import { colors } from './tokens';
 
 interface SkeletonLoaderProps {
   width?: number | string;
   height?: number | string;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   width = 100,
   height = 10,
-  className = ''
+  style
 }) => {
+  const opacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [opacity]);
+
   return (
-    <View
-      className={`bg-[${colors.surfaceAlt]} rounded-${'md'} w-[${typeof width === 'number' ? width + 'px' : width}] h-[${typeof height === 'number' ? height + 'px' : height}] animate-pulse ${className}`}
+    <Animated.View
+      style={[
+        {
+          backgroundColor: colors.surfaceAlt,
+          borderRadius: 4,
+          width: width as number,
+          height: height as number,
+          opacity,
+        },
+        style
+      ]}
     />
   );
 };

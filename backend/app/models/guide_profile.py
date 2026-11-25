@@ -19,10 +19,10 @@ class GuideProfile(Base):
     rating_avg = Column(Float, default=0.0)
     id_document_url = Column(String(255), nullable=True)  # URL to ID document in private storage
     license_document_url = Column(String(255), nullable=True)  # URL to license document in private storage
+    total_earnings = Column(Float, default=0.0)  # Total earnings accumulated
+    available_balance = Column(Float, default=0.0)  # Available balance for withdrawal
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
     user = relationship("User", back_populates="guide_profile")
-    tour_listings = relationship("TourListing", back_populates="guide")
-    # Note: We don't set up reverse for bookings here because Booking has foreign keys to User (tourist and guide) and we already have those in User.

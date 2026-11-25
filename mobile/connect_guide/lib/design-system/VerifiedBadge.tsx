@@ -1,25 +1,38 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from './tokens';
 
 interface VerifiedBadgeProps {
   size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   size = 'md',
-  className = ''
+  style
 }) => {
-  const sizeMap: Record<string, string> = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+  const sizeMap: Record<string, number> = {
+    sm: 16,
+    md: 20,
+    lg: 24
   };
 
   return (
     <View
-      className={`rounded-full bg-[${colors.primary]} ${sizeMap[size]} ${className}`}
-    />
+      style={[
+        {
+          width: sizeMap[size],
+          height: sizeMap[size],
+          borderRadius: sizeMap[size] / 2,
+          backgroundColor: colors.primary,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        style
+      ]}
+    >
+      <MaterialCommunityIcons name="check" size={sizeMap[size] * 0.6} color={colors.surface} />
+    </View>
   );
 };

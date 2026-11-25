@@ -17,7 +17,7 @@ from app.core.security import (
     decode_token,
 )
 from app.models.user import User, RoleEnum
-from app.schemas.user import Token
+from app.schemas.user import User as UserSchema, Token
 from app.core.dependencies import get_current_admin
 
 router = APIRouter()

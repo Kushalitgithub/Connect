@@ -18,7 +18,10 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const { data } = await api.post('/auth/admin/login', { email, password })
+      const formData = new URLSearchParams({ username: email, password })
+      const { data } = await api.post('/auth/admin/login', formData, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      })
       setTokens(data.access_token, data.refresh_token)
       navigate('/verification')
     } catch (err: any) {

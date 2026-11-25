@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, FlatList, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { Card } from '../../lib/design-system/Card';
-import { StatusChip } from '../../lib/design-system/StatusChip';
-import { colors, withOpacity } from '../../lib/design-system/tokens';
+import { TopStatusBar } from '../../../lib/design-system/TopStatusBar';
+import { BottomNav } from '../../../lib/design-system/BottomNav';
+import { Button as CustomButton } from '../../../lib/design-system/Button';
+import { Card } from '../../../lib/design-system/Card';
+import { StatusChip } from '../../../lib/design-system/StatusChip';
+import { colors, withOpacity } from '../../../lib/design-system/tokens';
 
 interface DashboardStats {
   pending_requests: number;
@@ -457,9 +457,9 @@ export default function DashboardPage() {
           <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
             {error}
           </Text>
-          <Button onPress={() => fetchDashboardData()} title="Retry" style={{ marginTop: 20 }}>
+          <CustomButton onPress={() => fetchDashboardData()} title="Retry" style={{ marginTop: 20 }}>
             Retry
-          </Button>
+          </CustomButton>
         </View>
         <BottomNav />
       </View>
@@ -552,7 +552,7 @@ export default function DashboardPage() {
         </View>
       </View>
       <View style={{ position: 'absolute', bottom: 40, left: 0, right: 0, height: 40, flexDirection: 'row', backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border }}>
-        <View
+        <Pressable
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -566,8 +566,8 @@ export default function DashboardPage() {
           <Text style={{ fontSize: 12, color: activeTab === 'overview' ? colors.primary : colors.textSecondary, marginTop: 2 }}>
             Overview
           </Text>
-        </View>
-        <View
+        </Pressable>
+        <Pressable
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -581,8 +581,8 @@ export default function DashboardPage() {
           <Text style={{ fontSize: 12, color: activeTab === 'tours' ? colors.primary : colors.textSecondary, marginTop: 2 }}>
             Tours
           </Text>
-        </View>
-        <View
+        </Pressable>
+        <Pressable
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -596,8 +596,8 @@ export default function DashboardPage() {
           <Text style={{ fontSize: 12, color: activeTab === 'bookings' ? colors.primary : colors.textSecondary, marginTop: 2 }}>
             Bookings
           </Text>
-        </View>
-        <View
+        </Pressable>
+        <Pressable
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -609,7 +609,7 @@ export default function DashboardPage() {
           <Text style={{ fontSize: 12, color: activeTab === 'earnings' ? colors.primary : colors.textSecondary, marginTop: 2 }}>
             Earnings
           </Text>
-        </View>
+        </Pressable>
       </View>
       <BottomNav />
     </View>

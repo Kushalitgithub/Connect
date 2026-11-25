@@ -72,14 +72,13 @@ def verify_refresh_token(token: str, db_session) -> bool:
     except JWTError:
         return False
 
-    # Hash the token to compare with stored hash
-    token_hash = get_password_hash(token)
-
-    # Find the token in the database
-    stored_token = db_session.query(RefreshToken).filter(
-        RefreshToken.token_hash == token_hash,
+    stored_tokens = db_session.query(RefreshToken).filter(
         RefreshToken.revoked == False
-    ).first()
+    ).all()
+    stored_token = next(
+        (candidate for candidate in stored_tokens if pwd_context.verify(token, candidate.token_hash)),
+        None,
+    )
 
     if not stored_token:
         return False
@@ -99,11 +98,11 @@ def revoke_refresh_token(token: str, db_session) -> bool:
     except JWTError:
         return False
 
-    token_hash = get_password_hash(token)
-
-    stored_token = db_session.query(RefreshToken).filter(
-        RefreshToken.token_hash == token_hash
-    ).first()
+    stored_tokens = db_session.query(RefreshToken).all()
+    stored_token = next(
+        (candidate for candidate in stored_tokens if pwd_context.verify(token, candidate.token_hash)),
+        None,
+    )
 
     if not stored_token:
         return False

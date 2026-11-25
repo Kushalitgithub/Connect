@@ -3,11 +3,11 @@ import { View, Text, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { Input } from '../../lib/design-system/Input';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { colors } from '../../lib/design-system/tokens';
+import { TopStatusBar } from '../../../../lib/design-system/TopStatusBar';
+import { BottomNav } from '../../../../lib/design-system/BottomNav';
+import { Input } from '../../../../lib/design-system/Input';
+import { Button as CustomButton } from '../../../../lib/design-system/Button';
+import { colors } from '../../../../lib/design-system/tokens';
 
 export default function TourCreatePage() {
   const router = useRouter();

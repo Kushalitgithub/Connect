@@ -1,15 +1,16 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, ViewStyle, StyleProp } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from './tokens';
 
 interface TopStatusBarProps {
   title: string;
   leftAction?: () => void;
   rightAction?: () => void;
-  leftIcon?: string; // Could be icon name for lucide-react-native
-  rightIcon?: string;
-  className?: string;
+  leftIcon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  rightIcon?: keyof typeof MaterialCommunityIcons.glyphMap;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const TopStatusBar: React.FC<TopStatusBarProps> = ({
@@ -18,30 +19,51 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({
   rightAction,
   leftIcon,
   rightIcon,
-  className = ''
+  style
 }) => {
   return (
-    <View className={`flex items-center justify-between px-4 py-4 bg-[${colors.surface]} border-b-[${colors.border]} ${className}`}>
+    <View style={[
+      {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'ios' ? 50 : 16,
+        paddingBottom: 16,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+      },
+      style
+    ]}>
       <StatusBar style="light" />
-      <View className="flex items-center gap-2">
-        {leftIcon && <Text className="text-[${colors.primary}]">{leftIcon}</Text>}
-        {leftAction && (
-          <Pressable onPress={leftAction} className="opacity-70 hover:opacity-100">
-            <Text className="text-[${colors.textSecondary}]">Back</Text>
-          </Pressable>
-        )}
-        {!leftAction && !leftIcon && (
-          <Text className="text-[${colors.textSecondary}] opacity-50">←</Text>
+
+      {/* Left side */}
+      <View style={{ width: 40 }}>
+        {leftIcon && leftAction && (
+          <TouchableOpacity onPress={leftAction}>
+            <MaterialCommunityIcons name={leftIcon} size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
         )}
       </View>
 
-      <View className="flex items-center gap-2">
-        <Text className={`font-medium text-[${colors.textPrimary}]`}>{title}</Text>
-        {rightIcon && <Text className="text-[${colors.primary}]">{rightIcon}</Text>}
-        {rightAction && (
-          <Pressable onPress={rightAction} className="opacity-70 hover:opacity-100">
-            <Text className="text-[${colors.textSecondary}]">Action</Text>
-          </Pressable>
+      {/* Center - Title */}
+      <Text style={{
+        fontSize: 18,
+        fontWeight: '600',
+        color: colors.textPrimary,
+        flex: 1,
+        textAlign: 'center',
+      }}>
+        {title}
+      </Text>
+
+      {/* Right side */}
+      <View style={{ width: 40, alignItems: 'flex-end' }}>
+        {rightIcon && rightAction && (
+          <TouchableOpacity onPress={rightAction}>
+            <MaterialCommunityIcons name={rightIcon} size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
         )}
       </View>
     </View>

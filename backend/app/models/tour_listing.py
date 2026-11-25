@@ -7,6 +7,7 @@ from sqlalchemy.sql import func
 
 from app.db.base import Base
 from app.models.user import User
+from app.models.availability import Availability
 
 
 class TourListing(Base):

@@ -22,6 +22,12 @@ export const colors = {
   border: '#E8E4DC',
   // Feedback
   error: '#E05252',
+  errorBg: '#FEE2E2',
+  success: '#065F46',
+  successBg: '#D1FAE5',
+  info: '#0369A1',
+  warning: '#92400E',
+  warningBg: '#FEF3C7',
   pending: '#F59E0B',
   star: '#FBBF24',
   // Status chip backgrounds

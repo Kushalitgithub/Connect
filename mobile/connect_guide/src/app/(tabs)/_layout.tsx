@@ -12,6 +12,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="requests" options={{ title: 'Requests' }} />
       <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
       <Tabs.Screen name="inbox" options={{ title: 'Messages' }} />
+      <Tabs.Screen name="withdrawal" options={{ title: 'Withdrawal' }} />
     </Tabs>
   );
 }

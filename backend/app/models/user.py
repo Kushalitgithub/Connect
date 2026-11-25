@@ -29,8 +29,4 @@ class User(Base):
     # Relationships
     guide_profile = relationship("GuideProfile", back_populates="user", uselist=False)
     tourist_bookings = relationship("Booking", foreign_keys="Booking.tourist_id", back_populates="tourist")
-    guide_bookings = relationship("Booking", foreign_keys="Booking.guide_id", back_populates="guide")
-    sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
-    reviews = relationship("Review", foreign_keys="Review.tourist_id", back_populates="tourist")
-    reports = relationship("Report", foreign_keys="Report.reporter_id", back_populates="reporter")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")

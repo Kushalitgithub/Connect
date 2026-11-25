@@ -3,12 +3,12 @@ import { View, Text, ScrollView, RefreshControl, ActivityIndicator, FlatList } f
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { Card } from '../../lib/design-system/Card';
-import { StatusChip } from '../../lib/design-system/StatusChip';
-import { colors, withOpacity } from '../../lib/design-system/tokens';
+import { TopStatusBar } from '../../../lib/design-system/TopStatusBar';
+import { BottomNav } from '../../../lib/design-system/BottomNav';
+import { Button as CustomButton } from '../../../lib/design-system/Button';
+import { Card } from '../../../lib/design-system/Card';
+import { StatusChip } from '../../../lib/design-system/StatusChip';
+import { colors, withOpacity } from '../../../lib/design-system/tokens';
 
 interface BookingRequest {
   id: number;
@@ -164,9 +164,9 @@ export default function RequestsPage() {
           <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
             {error}
           </Text>
-          <Button onPress={() => fetchRequests()} title="Retry" style={{ marginTop: 20 }}>
+          <CustomButton onPress={() => fetchRequests()} title="Retry" style={{ marginTop: 20 }}>
             Retry
-          </Button>
+          </CustomButton>
         </View>
         <BottomNav />
       </View>

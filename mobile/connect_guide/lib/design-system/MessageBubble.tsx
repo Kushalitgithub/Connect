@@ -1,25 +1,38 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ViewStyle, StyleProp } from 'react-native';
 import { colors, radii } from './tokens';
 
 interface MessageBubbleProps {
   text: string;
   isSentByMe: boolean;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   text,
   isSentByMe,
-  className = ''
+  style
 }) => {
   const bgColor = isSentByMe ? colors.primary : colors.surfaceAlt;
   const textColor = isSentByMe ? colors.surface : colors.textPrimary;
   const alignSelf = isSentByMe ? 'flex-end' : 'flex-start';
 
   return (
-    <View className={`max-w-[80%] rounded-${radii.lg} px-4 py-2 my-1 ${bgColor} ${textColor} align-self-${alignSelf} ${className}`}>
-      <Text>{text}</Text>
+    <View
+      style={[
+        {
+          maxWidth: '80%',
+          borderRadius: parseInt(radii.lg),
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+          marginVertical: 4,
+          backgroundColor: bgColor,
+          alignSelf,
+        },
+        style
+      ]}
+    >
+      <Text style={{ color: textColor }}>{text}</Text>
     </View>
   );
 };

@@ -1,19 +1,30 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, ViewStyle, StyleProp } from 'react-native';
 import { colors, radii } from './tokens';
 
 interface CardProps {
   children: React.ReactNode;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Card: React.FC<CardProps> = ({
   children,
-  className = ''
+  style
 }) => {
   return (
     <View
-      className={`bg-[${colors.surface]} rounded-${radii.md} shadow-sm ${className}`}
+      style={[
+        {
+          backgroundColor: colors.surface,
+          borderRadius: parseInt(radii.md),
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+          elevation: 2,
+        },
+        style
+      ]}
     >
       {children}
     </View>

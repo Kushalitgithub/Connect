@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, Text } from 'react-native';
+import { View, Image, Text, ViewStyle, StyleProp } from 'react-native';
 import { colors, radii } from './tokens';
 
 interface AvatarProps {
@@ -7,7 +7,7 @@ interface AvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   radius?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   placeholder?: string; // Initials or fallback text
-  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Avatar: React.FC<AvatarProps> = ({
@@ -15,26 +15,37 @@ export const Avatar: React.FC<AvatarProps> = ({
   size = 'md',
   radius = 'md',
   placeholder,
-  className = ''
+  style
 }) => {
-  const sizeMap: Record<string, string> = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16'
+  const sizeMap: Record<string, number> = {
+    sm: 32,
+    md: 40,
+    lg: 48,
+    xl: 64
   };
 
-  const radiusMap: Record<string, string> = {
-    sm: `rounded-${radii.sm}`,
-    md: `rounded-${radii.md}`,
-    lg: `rounded-${radii.lg}`,
-    xl: `rounded-${radii.xl}`,
-    full: 'rounded-full'
+  const radiusMap: Record<string, number | string> = {
+    sm: parseInt(radii.sm),
+    md: parseInt(radii.md),
+    lg: parseInt(radii.lg),
+    xl: parseInt(radii.xl),
+    full: 999
   };
+
+  const avatarSize = sizeMap[size];
+  const avatarRadius = radiusMap[radius];
 
   return (
     <View
-      className={`${sizeMap[size]} ${radiusMap[radius]} overflow-hidden ${className}`}
+      style={[
+        {
+          width: avatarSize,
+          height: avatarSize,
+          borderRadius: typeof avatarRadius === 'number' ? avatarRadius : 999,
+          overflow: 'hidden',
+        },
+        style
+      ]}
     >
       {source ? (
         <Image
@@ -43,8 +54,15 @@ export const Avatar: React.FC<AvatarProps> = ({
           resizeMode="cover"
         />
       ) : (
-        <View className={`flex items-center justify-center bg-[${colors.primary]} text-[${colors.surface}] w-full h-full`}>
-          <Text className="text-xs font-medium">{placeholder?.toUpperCase() || '?'}</Text>
+        <View style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.primary,
+        }}>
+          <Text style={{ fontSize: 12, fontWeight: '600', color: colors.surface }}>
+            {placeholder?.toUpperCase() || '?'}
+          </Text>
         </View>
       )}
     </View>

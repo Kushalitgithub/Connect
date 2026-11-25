@@ -43,8 +43,8 @@ export const Avatar: React.FC<AvatarProps> = ({
           resizeMode="cover"
         />
       ) : (
-        <View className={`flex items-center justify-center bg-[${colors.primary]} text-[${colors.surface}] w-full h-full`}>
-          <Text className="text-xs font-medium">{placeholder?.toUpperCase() || '?'}</Text>
+        <View className="flex items-center justify-center w-full h-full" style={{ backgroundColor: colors.primary }}>
+          <Text className="text-xs font-medium" style={{ color: colors.surface }}>{placeholder?.toUpperCase() || '?'}</Text>
         </View>
       )}
     </View>

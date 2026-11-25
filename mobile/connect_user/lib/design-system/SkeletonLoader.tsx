@@ -15,7 +15,12 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 }) => {
   return (
     <View
-      className={`bg-[${colors.surfaceAlt]} rounded-${'md'} w-[${typeof width === 'number' ? width + 'px' : width}] h-[${typeof height === 'number' ? height + 'px' : height}] animate-pulse ${className}`}
+      className={`rounded-md animate-pulse ${className}`}
+      style={{
+        backgroundColor: colors.surfaceAlt,
+        width: typeof width === 'number' ? width : undefined,
+        height: typeof height === 'number' ? height : undefined,
+      }}
     />
   );
 };

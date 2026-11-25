@@ -11,15 +11,16 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   size = 'md',
   className = ''
 }) => {
-  const sizeMap: Record<string, string> = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+  const sizeMap: Record<string, number> = {
+    sm: 16,
+    md: 24,
+    lg: 32
   };
 
   return (
     <View
-      className={`rounded-full bg-[${colors.primary]} ${sizeMap[size]} ${className}`}
+      className={`rounded-full ${className}`}
+      style={{ width: sizeMap[size], height: sizeMap[size], backgroundColor: colors.primary }}
     />
   );
 };

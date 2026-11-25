@@ -8,6 +8,7 @@ interface InputProps {
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   className?: string;
 }
 
@@ -17,16 +18,18 @@ export const Input: React.FC<InputProps> = ({
   onChangeText,
   secureTextEntry = false,
   keyboardType = 'default',
+  autoCapitalize = 'sentences',
   className = ''
 }) => {
   return (
-    <View className={`flex-1 border border-[${colors.border]} rounded-${radii.md} bg-[${colors.surface]} px-4 py-2 focus:border-[${colors.primary}] focus:outline-none ${className}`}>
+    <View className={`flex-1 border border-[${colors.border}] rounded-${radii.md} bg-[${colors.surface}] px-4 py-2 focus:border-[${colors.primary}] focus:outline-none ${className}`}>
       <TextInput
         placeholder={placeholder}
         value={value || ''}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
         style={{ flex: 1, fontSize: 16 }}
       />
     </View>

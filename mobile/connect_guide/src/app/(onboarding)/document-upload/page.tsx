@@ -3,11 +3,11 @@ import { View, Text, Button, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar;
-import { Input } from '../../lib/design-system/Input';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { colors } from '../../lib/design-system/tokens';
+import { BottomNav } from '../../../../lib/design-system/BottomNav';
+import { TopStatusBar } from '../../../../lib/design-system/TopStatusBar';
+import { Input } from '../../../../lib/design-system/Input';
+import { Button as CustomButton } from '../../../../lib/design-system/Button';
+import { colors } from '../../../../lib/design-system/tokens';
 
 // In a real app, we would use expo-document-picker or expo-image-picker to pick a file.
 // For this example, we'll simulate the file pick by allowing the user to enter a file URI or using a placeholder.
@@ -41,7 +41,7 @@ export default function DocumentUploadPage() {
       // In a real app, we would upload the file to a private object storage (like S3) and get a URL.
       // For this example, we'll just store the file URI locally (simulating successful upload).
       await SecureStore.setItemAsync('guide_document_uri', fileUri);
-      await SecureStore.setItemAsync('guide_document_name', fileName);
+      await SecureStore.setItemAsync('guide_document_name', fileName || 'document');
 
       // After uploading, we can go to the submitted state.
       router.replace('/(onboarding)/submitted');
@@ -79,7 +79,6 @@ export default function DocumentUploadPage() {
           title="Pick Document"
           onPress={pickFile}
           disabled={uploading}
-          className="mb-4"
         />
 
         <CustomButton

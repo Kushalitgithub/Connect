@@ -29,6 +29,6 @@ class Booking(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    tourist = relationship("User", foreign_keys=[tourist_id])
+    tourist = relationship("User", foreign_keys=[tourist_id], back_populates="tourist_bookings")
     tour_listing = relationship("TourListing", foreign_keys=[tour_listing_id])
     # Note: We don't set up reverse for messages here because Message has a thread_id and we will set up ChatThread and Message models.

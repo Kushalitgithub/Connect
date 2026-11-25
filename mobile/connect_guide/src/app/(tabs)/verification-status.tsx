@@ -3,12 +3,12 @@ import { View, Text, ScrollView, Alert, RefreshControl, ActivityIndicator } from
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { StatusChip } from '../../lib/design-system/StatusChip';
-import { Card } from '../../lib/design-system/Card';
-import { colors, withOpacity } from '../../lib/design-system/tokens';
+import { TopStatusBar } from '../../../lib/design-system/TopStatusBar';
+import { BottomNav } from '../../../lib/design-system/BottomNav';
+import { Button as CustomButton } from '../../../lib/design-system/Button';
+import { StatusChip } from '../../../lib/design-system/StatusChip';
+import { Card } from '../../../lib/design-system/Card';
+import { colors, withOpacity } from '../../../lib/design-system/tokens';
 
 interface VerificationStatusData {
   verification_status: 'pending' | 'approved' | 'rejected';
@@ -136,9 +136,9 @@ export default function VerificationStatusPage() {
           <Text style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
             {error || 'Unable to load verification status'}
           </Text>
-          <Button onPress={() => fetchVerificationStatus()} title="Retry" style={{ marginTop: 20 }}>
+          <CustomButton onPress={() => fetchVerificationStatus()} title="Retry" style={{ marginTop: 20 }}>
             Retry
-          </Button>
+          </CustomButton>
         </View>
         <BottomNav />
       </View>

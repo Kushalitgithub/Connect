@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput } from 'react-native';
+import { View, Text, TextInput, ViewStyle, StyleProp } from 'react-native';
 import { colors, radii } from './tokens';
 
 interface InputProps {
@@ -7,8 +7,13 @@ interface InputProps {
   value?: string;
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'decimal-pad' | 'number-pad';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  label?: string;
+  multiline?: boolean;
+  minHeight?: number;
   className?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -17,17 +22,36 @@ export const Input: React.FC<InputProps> = ({
   onChangeText,
   secureTextEntry = false,
   keyboardType = 'default',
-  className = ''
+  autoCapitalize = 'sentences',
+  label,
+  multiline = false,
+  minHeight,
+  className = '',
+  style
 }) => {
   return (
-    <View className={`flex-1 border border-[${colors.border]} rounded-${radii.md} bg-[${colors.surface]} px-4 py-2 focus:border-[${colors.primary}] focus:outline-none ${className}`}>
+    <View className={className} style={[
+      {
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: parseInt(radii.md),
+        backgroundColor: colors.surface,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      },
+      style
+    ]}>
+      {label && <Text style={{ marginBottom: 6, color: colors.textPrimary }}>{label}</Text>}
       <TextInput
         placeholder={placeholder}
         value={value || ''}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
-        style={{ flex: 1, fontSize: 16 }}
+        autoCapitalize={autoCapitalize}
+        multiline={multiline}
+        placeholderTextColor={colors.textMuted}
+        style={{ fontSize: 16, color: colors.textPrimary, minHeight }}
       />
     </View>
   );

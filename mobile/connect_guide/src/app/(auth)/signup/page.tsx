@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { View, Text, Button, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar';
-import { Input } from '../../lib/design-system/Input';
-import { Button as CustomButton } from '../../lib/design-system/Button';
-import { colors } from '../../lib/design-system/tokens>;
+import { BottomNav } from '../../../../lib/design-system/BottomNav';
+import { TopStatusBar } from '../../../../lib/design-system/TopStatusBar';
+import { Input } from '../../../../lib/design-system/Input';
+import { Button as CustomButton } from '../../../../lib/design-system/Button';
+import { colors } from '../../../../lib/design-system/tokens';
+import { storeJWT, storeRefreshToken, storeUserRole } from '../../../../lib/auth/secureStore';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/guide_auth/signup', {
+      const response = await fetch('http://localhost:8000/api/v1/auth/guide/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,9 +45,9 @@ export default function SignupPage() {
       }
 
       const data = await response.json();
-      await SecureStore.setItemAsync('access_token', data.access_token);
-      await SecureStore.setItemAsync('refresh_token', data.refresh_token);
-      await SecureStore.setItemAsync('user_role', 'guide'); // For connect_guide
+      await storeJWT(data.access_token);
+      await storeRefreshToken(data.refresh_token);
+      await storeUserRole('guide');
 
       router.replace('/(tabs)'); // Redirect to main tabs
     } catch (err: any) {

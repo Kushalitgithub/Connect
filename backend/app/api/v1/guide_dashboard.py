@@ -1,7 +1,7 @@
 """
 Endpoints for guide dashboard overview.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -12,6 +12,7 @@ from app.models.user import User, RoleEnum
 from app.models.tour_listing import TourListing
 from app.models.booking import Booking, BookingStatusEnum
 from app.models.guide_profile import GuideProfile
+from app.models.withdrawal import Withdrawal, WithdrawalStatusEnum
 from app.core.dependencies import get_current_guide
 
 router = APIRouter()
@@ -31,6 +32,14 @@ def get_guide_dashboard_overview(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can access dashboard overview",
         )
 
     # Count pending booking requests (bookings with status=pending for this guide's tours)
@@ -82,6 +91,14 @@ def get_guide_tours(
             detail="This endpoint is for guide accounts only",
         )
 
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can access their tours",
+        )
+
     tours = db.query(TourListing).filter(
         TourListing.guide_id == current_user.id
     ).offset(skip).limit(limit).all()
@@ -92,10 +109,10 @@ def get_guide_tours(
 @router.post("/dashboard/tours", status_code=status.HTTP_201_CREATED)
 def create_tour(
     title: str,
-    description: Optional[str] = None,
-    itinerary: Optional[str] = None,
     price: float,
     capacity: int,
+    description: Optional[str] = None,
+    itinerary: Optional[str] = None,
     current_user: User = Depends(get_current_guide),
     db: Session = Depends(get_db)
 ):
@@ -107,6 +124,14 @@ def create_tour(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can create tours",
         )
 
     # Validate inputs
@@ -158,6 +183,14 @@ def update_tour(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can update tours",
         )
 
     tour = db.query(TourListing).filter(
@@ -218,6 +251,14 @@ def delete_tour(
             detail="This endpoint is for guide accounts only",
         )
 
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can delete tours",
+        )
+
     tour = db.query(TourListing).filter(
         TourListing.id == tour_id,
         TourListing.guide_id == current_user.id
@@ -255,6 +296,14 @@ def get_guide_bookings(
             detail="This endpoint is for guide accounts only",
         )
 
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can access their bookings",
+        )
+
     query = db.query(Booking).join(TourListing).filter(
         TourListing.guide_id == current_user.id
     )
@@ -277,7 +326,7 @@ def get_guide_bookings(
 @router.put("/dashboard/bookings/{booking_id}/status", status_code=status.HTTP_200_OK)
 def update_booking_status(
     booking_id: int,
-    status: str,
+    booking_status: str = Query(..., alias="status"),
     current_user: User = Depends(get_current_guide),
     db: Session = Depends(get_db)
 ):
@@ -304,15 +353,18 @@ def update_booking_status(
 
     # Validate status
     try:
-        status_enum = BookingStatusEnum(status)
+        status_enum = BookingStatusEnum(booking_status)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid status: {status}",
+            detail=f"Invalid status: {booking_status}",
         )
 
-    # Only allow pending -> accepted/declined transitions
-    if booking.status != BookingStatusEnum.pending:
+    # Only allow pending -> accepted/declined transitions.
+    if booking.status != BookingStatusEnum.pending or status_enum not in (
+        BookingStatusEnum.accepted,
+        BookingStatusEnum.declined,
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only pending bookings can be updated",
@@ -339,6 +391,14 @@ def get_guide_earnings(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can access their earnings",
         )
 
     # Calculate date range
@@ -383,4 +443,114 @@ def get_guide_earnings(
             }
             for day in daily_earnings
         ]
+    }
+
+
+@router.get("/dashboard/withdrawal/history", status_code=status.HTTP_200_OK)
+def get_guide_withdrawal_history(
+    current_user: User = Depends(get_current_guide),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+):
+    """
+    Get withdrawal history for the guide.
+    """
+    # Ensure the user is a guide
+    if current_user.role != RoleEnum.guide:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can access withdrawal history",
+        )
+
+    withdrawals = db.query(Withdrawal).filter(
+        Withdrawal.guide_id == current_user.id
+    ).order_by(Withdrawal.created_at.desc()).offset(skip).limit(limit).all()
+
+    return [
+        {
+            "id": w.id,
+            "amount": w.amount,
+            "status": w.status,
+            "payment_method": w.payment_method,
+            "payment_details": w.payment_details,
+            "processed_at": w.processed_at.isoformat() if w.processed_at else None,
+            "failed_reason": w.failed_reason,
+            "created_at": w.created_at.isoformat(),
+            "updated_at": w.updated_at.isoformat()
+        }
+        for w in withdrawals
+    ]
+
+
+@router.post("/dashboard/withdrawal/request", status_code=status.HTTP_200_OK)
+def request_guide_withdrawal(
+    amount: float,
+    payment_method: str,
+    payment_details: Optional[str] = None,
+    current_user: User = Depends(get_current_guide),
+    db: Session = Depends(get_db)
+):
+    """
+    Request a withdrawal of earnings.
+    """
+    # Ensure the user is a guide
+    if current_user.role != RoleEnum.guide:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is for guide accounts only",
+        )
+
+    # Check if guide is verified
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile or guide_profile.verification_status != "approved":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only verified guides can request withdrawals",
+        )
+
+    # Validate amount
+    if amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Withdrawal amount must be greater than zero",
+        )
+
+    # Check if sufficient balance
+    if guide_profile.available_balance < amount:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Insufficient balance for withdrawal",
+        )
+
+    # Create withdrawal record
+    withdrawal = Withdrawal(
+        guide_id=current_user.id,
+        amount=amount,
+        payment_method=payment_method,
+        payment_details=payment_details,
+        status=WithdrawalStatusEnum.pending
+    )
+
+    db.add(withdrawal)
+    db.commit()
+    db.refresh(withdrawal)
+
+    return {
+        "id": withdrawal.id,
+        "amount": withdrawal.amount,
+        "status": withdrawal.status,
+        "payment_method": withdrawal.payment_method,
+        "payment_details": withdrawal.payment_details,
+        "created_at": withdrawal.created_at.isoformat(),
+        "updated_at": withdrawal.updated_at.isoformat(),
+        "message": "Withdrawal request submitted successfully"
     }

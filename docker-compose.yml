@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5432"
 
   # We can add backend service here if we want to run it via docker-compose, but for now we only need Postgres.
   # The backend will be run locally for development.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { Link } from 'expo-router';
 import { colors } from './tokens';
 
@@ -12,7 +12,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   return (
     <View className={`fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around
-      bg-[${colors.surface}]/80 backdrop-blur-sm border-t-[${colors.border]}
+      bg-[${colors.surface}]/80 backdrop-blur-sm border-t-[${colors.border}]
       px-4 py-3 shadow-md z-50 ${className}`}>
       <Link href="/" className="flex items-center gap-1 text-[${colors.textSecondary}] hover:text-[${colors.primary}]">
         <Text>🏠</Text>

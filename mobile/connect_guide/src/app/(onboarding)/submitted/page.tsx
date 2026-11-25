@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { BottomNav } from '../../lib/design-system/BottomNav';
-import { TopStatusBar } from '../../lib/design-system/TopStatusBar;
-import { Button as CustomButton } from '../../lib/design-system/Button;
-import { VerifiedBadge } from '../../lib/design-system/VerifiedBadge';
-import { RatingStars } from '../../lib/design-system/RatingStars';
-import { StatusChip } from '../../lib/design-system/StatusChip';
-import { colors } from '../../lib/design-system/tokens';
+import { BottomNav } from '../../../../lib/design-system/BottomNav';
+import { TopStatusBar } from '../../../../lib/design-system/TopStatusBar';
+import { Button as CustomButton } from '../../../../lib/design-system/Button';
+import { VerifiedBadge } from '../../../../lib/design-system/VerifiedBadge';
+import { RatingStars } from '../../../../lib/design-system/RatingStars';
+import { StatusChip } from '../../../../lib/design-system/StatusChip';
+import { colors } from '../../../../lib/design-system/tokens';
 
 export default function SubmittedPage() {
   const router = useRouter();

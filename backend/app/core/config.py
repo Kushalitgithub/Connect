@@ -39,11 +39,11 @@ class Settings(BaseSettings):
             return v
         return PostgresDsn.build(
             scheme="postgresql+psycopg2",
-            user=values.get("POSTGRES_USER"),
+            username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
-            port=str(values.get("POSTGRES_PORT")),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
+            port=int(values.get("POSTGRES_PORT", "5432")),
+            path=values.get('POSTGRES_DB') or '',
         )
 
     # CORS

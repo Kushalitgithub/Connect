@@ -88,8 +88,55 @@ async def guide_onboarding(
     }
 
 
+@router.get("/me", status_code=status.HTTP_200_OK)
+async def get_guide_profile(
+    current_user: User = Depends(get_current_guide),
+    db: Session = Depends(get_db)
+):
+    """
+    Get the guide's complete profile information.
+    """
+    # Ensure the user is a guide
+    if current_user.role != RoleEnum.guide:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is for guide accounts only",
+        )
+
+    # Get the guide profile
+    guide_profile = db.query(GuideProfile).filter(GuideProfile.user_id == current_user.id).first()
+    if not guide_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide profile not found",
+        )
+
+    # Generate signed URLs for verification documents
+    id_document_url = None
+    license_document_url = None
+
+    if guide_profile.id_document_url:
+        id_document_url = await storage_service.get_verification_document_url(guide_profile.id_document_url)
+    if guide_profile.license_document_url:
+        license_document_url = await storage_service.get_verification_document_url(guide_profile.license_document_url)
+
+    return {
+        "id": guide_profile.id,
+        "user_id": guide_profile.user_id,
+        "bio": guide_profile.bio,
+        "verification_status": guide_profile.verification_status,
+        "rating_avg": guide_profile.rating_avg,
+        "id_document_url": id_document_url,
+        "license_document_url": license_document_url,
+        "total_earnings": guide_profile.total_earnings,
+        "available_balance": guide_profile.available_balance,
+        "created_at": guide_profile.created_at.isoformat() if guide_profile.created_at else None,
+        "updated_at": guide_profile.updated_at.isoformat() if guide_profile.updated_at else None,
+    }
+
+
 @router.get("/me/verification-status", status_code=status.HTTP_200_OK)
-def get_verification_status(
+async def get_verification_status(
     current_user: User = Depends(get_current_guide),
     db: Session = Depends(get_db)
 ):
