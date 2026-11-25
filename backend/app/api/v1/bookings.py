@@ -18,6 +18,46 @@ from app.core.dependencies import get_current_tourist, get_current_guide
 router = APIRouter()
 
 
+@router.get("/guides/{guide_id}", status_code=status.HTTP_200_OK)
+def get_public_guide_profile(
+    guide_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Public guide profile + their active tours (for tourist browse).
+    """
+    guide = db.query(User).filter(
+        User.id == guide_id,
+        User.role == RoleEnum.guide,
+    ).first()
+    if not guide:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide not found",
+        )
+
+    profile = db.query(GuideProfile).filter(GuideProfile.user_id == guide_id).first()
+
+    tours = db.query(TourListing).filter(
+        TourListing.guide_id == guide_id,
+        TourListing.active == True,  # noqa: E712
+    ).all()
+
+    return {
+        "id": guide.id,
+        "email": guide.email,
+        "created_at": guide.created_at.isoformat() if guide.created_at else None,
+        "profile": {
+            "bio": profile.bio if profile else None,
+            "verification_status": profile.verification_status if profile else None,
+            "rating_avg": profile.rating_avg if profile else None,
+            "total_earnings": profile.total_earnings if profile else None,
+            "available_balance": profile.available_balance if profile else None,
+        } if profile else None,
+        "tours": tours,
+    }
+
+
 @router.get("/tours", status_code=status.HTTP_200_OK)
 def list_tours(
     db: Session = Depends(get_db),

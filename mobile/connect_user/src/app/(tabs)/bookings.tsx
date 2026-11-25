@@ -138,7 +138,7 @@ export default function BookingsScreen() {
               </View>
             </Pressable>
           )}
-        </FlatList>
+        />
       </ScrollView>
     </SafeAreaView>
   );

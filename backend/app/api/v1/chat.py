@@ -85,6 +85,42 @@ def create_chat_thread(
     return thread
 
 
+@router.post("/threads/{thread_id}/messages", status_code=status.HTTP_201_CREATED)
+def create_message(
+    thread_id: int,
+    body: str,
+    current_user: User = Depends(get_current_user_any),
+    db: Session = Depends(get_db)
+):
+    """
+    Send a message in a thread. Only participants can post.
+    """
+    thread = db.query(ChatThread).filter(ChatThread.id == thread_id).first()
+    if not thread:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Thread not found",
+        )
+
+    if current_user.id not in (thread.tourist_id, thread.guide_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a participant of this thread",
+        )
+
+    message = Message(
+        thread_id=thread_id,
+        sender_id=current_user.id,
+        body=body,
+    )
+    db.add(message)
+    thread.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(message)
+
+    return message
+
+
 @router.get("/threads/{thread_id}/messages", status_code=status.HTTP_200_OK)
 def get_thread_messages(
     thread_id: int,
