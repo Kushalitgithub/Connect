@@ -1,6 +1,10 @@
 # Environment variables
 .env
-.env.*
+.env.local
+.env.*.local
+
+# Environment templates (commit these, not .env)
+!.env.example
 
 # Secrets
 *.pem
