@@ -1,148 +1,193 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TopStatusBar } from '../../../../lib/design-system/TopStatusBar';
-import { BottomNav } from '../../../../lib/design-system/BottomNav';
-import { Input } from '../../../../lib/design-system/Input';
-import { Button as CustomButton } from '../../../../lib/design-system/Button';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import { colors } from '../../../../lib/design-system/tokens';
+import { api } from '../../../../lib/api';
 
-export default function TourCreatePage() {
+export default function TourCreateScreen() {
   const router = useRouter();
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [itinerary, setItinerary] = useState('');
-  const [price, setPrice] = useState('');
-  const [capacity, setCapacity] = useState('');
+  const [destination, setDestination] = useState('');
+  const [price, setPrice] = useState('45');
+  const [capacity, setCapacity] = useState('6');
+  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleCreateTour = async () => {
-    if (!title || !price || !capacity) {
-      Alert.alert('Error', 'Please fill in all required fields');
+  const handlePublish = async () => {
+    if (!title.trim() || !destination.trim()) {
+      setError('Please fill in title and destination');
       return;
     }
-
-    const priceNum = parseFloat(price);
-    const capacityNum = parseInt(capacity, 10);
-
-    if (isNaN(priceNum) || priceNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid price greater than zero');
+    const priceNum = Number(price);
+    const capacityNum = Number(capacity);
+    if (!priceNum || priceNum <= 0) {
+      setError('Price must be greater than zero');
       return;
     }
-
-    if (isNaN(capacityNum) || capacityNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid capacity greater than zero');
+    if (!capacityNum || capacityNum <= 0) {
+      setError('Capacity must be greater than zero');
       return;
     }
-
     setLoading(true);
+    setError(null);
     try {
-      const accessToken = await SecureStore.getItemAsync('access_token');
-      if (!accessToken) {
-        Alert.alert('Error', 'Not authenticated. Please login again.');
-        router.replace('/(auth)/login');
-        return;
-      }
-
-      const response = await fetch('http://localhost:8000/api/v1/guide/dashboard/tours', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          description: description || null,
-          itinerary: itinerary || null,
+      await api.post('/guide/dashboard/tours', undefined, {
+        params: {
+          title: title.trim(),
+          description: `${destination.trim()} tour - ${destination}`,
           price: priceNum,
           capacity: capacityNum,
-        }),
+        },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create tour');
-      }
-
-      const data = await response.json();
-      Alert.alert('Success', 'Tour created successfully');
-      router.replace('/(tabs)/dashboard');
+      setSaved(true);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to create tour');
+      setError(err?.response?.data?.detail || 'Failed to publish tour. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, padding: 20 }}>
-      <TopStatusBar title="Create Tour" leftAction={() => router.back()} />
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.textPrimary, marginBottom: 16 }}>
-          Create New Tour
-        </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.topBar}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <ArrowLeft size={22} color={colors.textPrimary} />
+          </Pressable>
+          <Text style={styles.headerTitle}>Create New Tour</Text>
+          <View style={{ width: 22 }} />
+        </View>
 
-        <Input
-          label="Tour Title"
-          placeholder="Enter tour title"
-          value={title}
-          onChangeText={setTitle}
-          className="mb-4"
-        />
+        {!saved ? (
+          <ScrollView contentContainerStyle={styles.formContent} showsVerticalScrollIndicator={false}>
+            <Text style={styles.label}>Tour Title</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Kathmandu Valley Secret Courtyards"
+              value={title}
+              onChangeText={setTitle}
+            />
 
-        <Input
-          label="Description"
-          placeholder="Enter tour description"
-          value={description}
-          onChangeText={setDescription}
-          className="mb-4"
-          multiline
-          minHeight={80}
-        />
+            <Text style={styles.label}>Destination / Area</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Kathmandu, Patan, Bhaktapur"
+              value={destination}
+              onChangeText={setDestination}
+            />
 
-        <Input
-          label="Itinerary"
-          placeholder="Enter tour itinerary"
-          value={itinerary}
-          onChangeText={setItinerary}
-          className="mb-4"
-          multiline
-          minHeight={80}
-        />
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Price per Guest ($)</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={price}
+                  onChangeText={setPrice}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Max Capacity</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={capacity}
+                  onChangeText={setCapacity}
+                />
+              </View>
+            </View>
 
-        <Input
-          label="Price (per person)"
-          placeholder="Enter price"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="decimal-pad"
-          className="mb-4"
-        />
+            <Text style={styles.label}>Duration</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 4 Hours / Half Day"
+              value={destination ? `${destination} tour duration` : '4 Hours'}
+              editable={false}
+            />
 
-        <Input
-          label="Capacity"
-          placeholder="Enter maximum number of tourists"
-          value={capacity}
-          onChangeText={setCapacity}
-          keyboardType="number-pad"
-          className="mb-4"
-        />
+            {error && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
 
-        <CustomButton
-          title={loading ? 'Creating Tour...' : 'Create Tour'}
-          onPress={handleCreateTour}
-          disabled={loading}
-          className="mb-4"
-        >
-          {loading ? 'Creating Tour...' : 'Create Tour'}
-        </CustomButton>
-      </ScrollView>
-      <BottomNav />
-    </View>
+            <Pressable style={styles.submitBtn} onPress={handlePublish} disabled={loading}>
+              <Text style={styles.submitBtnText}>{loading ? 'Publishing...' : 'Publish Tour Listing'}</Text>
+            </Pressable>
+          </ScrollView>
+        ) : (
+          <View style={styles.successBox}>
+            <CheckCircle2 size={68} color="#10B981" />
+            <Text style={styles.successTitle}>Tour Published!</Text>
+            <Text style={styles.successDesc}>
+              Tourists can now discover and book your tour on the Connect marketplace.
+            </Text>
+            <Pressable
+              style={styles.doneBtn}
+              onPress={() => router.push('/(tabs)/dashboard' as any)}
+            >
+              <Text style={styles.doneBtnText}>Back to Dashboard</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
+  container: { flex: 1 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
+  formContent: { padding: 20, gap: 14 },
+  label: { fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginBottom: -4 },
+  input: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  row: { flexDirection: 'row', gap: 12 },
+  submitBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  submitBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  successBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  successTitle: { fontSize: 24, fontWeight: '800', color: colors.textPrimary, marginTop: 16 },
+  successDesc: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginTop: 8, lineHeight: 22 },
+  doneBtn: { backgroundColor: colors.primary, borderRadius: 14, paddingHorizontal: 24, paddingVertical: 14, marginTop: 24 },
+  doneBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  errorBox: { backgroundColor: '#FEE2E2', borderRadius: 10, padding: 12, marginBottom: 16 },
+  errorText: { color: '#991B1B', fontSize: 13 },
+});
